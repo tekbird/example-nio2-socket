@@ -59,10 +59,13 @@ public class ClientMain {
 		String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		String fullalphabet = alphabet + alphabet.toLowerCase() + "123456789";
 		Random random = new Random();
+		int length = 10;
+		char[] chars = new char[length];
+		for (int i = 0; i < length; i++) {
+			chars[i] = fullalphabet.charAt(random.nextInt(fullalphabet.length() - 1));
+		}
 
-		char code = fullalphabet.charAt(random.nextInt(9));
-
-		return String.valueOf(code).getBytes();
+		return String.valueOf(chars).getBytes();
 
 	}
 
@@ -73,12 +76,7 @@ public class ClientMain {
 
 			@Override
 			public void completed(Integer result, AsynchronousSocketChannel attachment) {
-				byte[] data = new byte[result];
-				buf.flip();
-				for (int i = 0; i < result; i++) {
-					data[i] = buf.get(i);
-				}
-				Logger.info("read {} bytes {}", result, new String(data));
+				Logger.info("read {} bytes {}", result, new String(buf.array()));
 				startRead(channel);
 			}
 
