@@ -20,7 +20,16 @@ public class ClientMain {
 					public void completed(Void result, AsynchronousSocketChannel channel) {
 
 						startRead(channel);
-						startWrite(channel);
+						Thread writerThread = new Thread(new Runnable() {
+
+							@Override
+							public void run() {
+
+								startWrite(channel);
+							}
+
+						});
+						writerThread.start();
 					}
 
 					@Override
@@ -36,16 +45,16 @@ public class ClientMain {
 	protected static void startWrite(AsynchronousSocketChannel channel) {
 		while (true) {
 			try {
-				byte input = generateCode();
-				channel.write(ByteBuffer.wrap(new byte[] { input }));
-				Thread.sleep(100);
+				byte[] input = generateCode();
+				channel.write(ByteBuffer.wrap(input));
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				Logger.error("failed to write: {}", e.getMessage());
 			}
 		}
 	}
 
-	public static byte generateCode() {
+	public static byte[] generateCode() {
 
 		String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		String fullalphabet = alphabet + alphabet.toLowerCase() + "123456789";
@@ -53,7 +62,7 @@ public class ClientMain {
 
 		char code = fullalphabet.charAt(random.nextInt(9));
 
-		return (byte) (code >> 2);
+		return String.valueOf(code).getBytes();
 
 	}
 
@@ -65,8 +74,11 @@ public class ClientMain {
 			@Override
 			public void completed(Integer result, AsynchronousSocketChannel attachment) {
 				byte[] data = new byte[result];
-				buf.get(data, 0, result);
-				Logger.info("read {} bytes {}", result, String.format("%02X", data[0]));
+				buf.flip();
+				for (int i = 0; i < result; i++) {
+					data[i] = buf.get(i);
+				}
+				Logger.info("read {} bytes {}", result, new String(data));
 				startRead(channel);
 			}
 
