@@ -19,9 +19,10 @@ public class ServerMain {
 					@Override
 					public void completed(AsynchronousSocketChannel sockChannel,
 							AsynchronousServerSocketChannel serverSock) {
-						// a connection is accepted, start to accept next connection
+						
+						Logger.info("a connection is accepted, start to accept next connection");
 						serverSock.accept(serverSock, this);
-						// start to read message from the client
+						Logger.info("start to read message from the client");
 						startRead(sockChannel);
 
 					}
@@ -38,8 +39,6 @@ public class ServerMain {
 	
 	private static void startRead( AsynchronousSocketChannel sockChannel ) {
         final ByteBuffer buf = ByteBuffer.allocate(2048);
-        
-        //read message from client
         sockChannel.read( buf, sockChannel, new CompletionHandler<Integer, AsynchronousSocketChannel >() {
 
             /**
@@ -47,6 +46,19 @@ public class ServerMain {
              */
             @Override
             public void completed(Integer result, AsynchronousSocketChannel channel  ) {
+
+            	if(result == -1) {
+            		try {
+						channel.close();
+						Logger.info("result is -1, closing channel");
+					} catch (IOException e) {
+						Logger.error("failed to close channel");
+					}
+            		return;
+            	}
+                
+                Logger.info("read some message from client");
+                
                 buf.flip();
                 
                 // echo the message
@@ -68,7 +80,7 @@ public class ServerMain {
 
             @Override
             public void completed(Integer result, AsynchronousSocketChannel channel) {                 
-                //finish to write message to client, nothing to do
+            	Logger.info("finish to write message to client, nothing to do");
             }
 
             @Override
