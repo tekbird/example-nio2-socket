@@ -29,6 +29,7 @@ public class ClientMain {
 							}
 
 						});
+						writerThread.setName("writer-thread");
 						writerThread.start();
 					}
 
@@ -47,6 +48,7 @@ public class ClientMain {
 			try {
 				byte[] input = generateCode();
 				channel.write(ByteBuffer.wrap(input));
+				Logger.info("written {} bytes", input.length);
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				Logger.error("failed to write: {}", e.getMessage());
