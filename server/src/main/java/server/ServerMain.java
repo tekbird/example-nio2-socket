@@ -19,9 +19,10 @@ public class ServerMain {
 					@Override
 					public void completed(AsynchronousSocketChannel sockChannel,
 							AsynchronousServerSocketChannel serverSock) {
-						// a connection is accepted, start to accept next connection
+						
+						Logger.info("a connection is accepted, start to accept next connection");
 						serverSock.accept(serverSock, this);
-						// start to read message from the client
+						Logger.info("start to read message from the client");
 						startRead(sockChannel);
 
 					}
@@ -35,6 +36,7 @@ public class ServerMain {
 
 		System.in.read();
 	}
+<<<<<<< HEAD
 
 	private static void startRead(AsynchronousSocketChannel sockChannel) {
 		final ByteBuffer buf = ByteBuffer.allocate(2048);
@@ -80,4 +82,60 @@ public class ServerMain {
 
 		});
 	}
+=======
+	
+	private static void startRead( AsynchronousSocketChannel sockChannel ) {
+        final ByteBuffer buf = ByteBuffer.allocate(2048);
+        sockChannel.read( buf, sockChannel, new CompletionHandler<Integer, AsynchronousSocketChannel >() {
+
+            /**
+             * some message is read from client, this callback will be called
+             */
+            @Override
+            public void completed(Integer result, AsynchronousSocketChannel channel  ) {
+
+            	if(result == -1) {
+            		try {
+						channel.close();
+						Logger.info("result is -1, closing channel");
+					} catch (IOException e) {
+						Logger.error("failed to close channel");
+					}
+            		return;
+            	}
+                
+                Logger.info("read some message from client");
+                
+                buf.flip();
+                
+                // echo the message
+                startWrite( channel, buf );
+                
+                //start to read next message again
+                startRead( channel );
+            }
+
+            @Override
+            public void failed(Throwable exc, AsynchronousSocketChannel channel ) {
+                Logger.error("failed to read: {}", exc.getMessage());
+            }
+        });
+    }
+	
+	private static void startWrite( AsynchronousSocketChannel sockChannel, final ByteBuffer buf) {
+        sockChannel.write(buf, sockChannel, new CompletionHandler<Integer, AsynchronousSocketChannel >() {
+
+            @Override
+            public void completed(Integer result, AsynchronousSocketChannel channel) {                 
+            	Logger.info("finish to write message to client, nothing to do");
+            }
+
+            @Override
+            public void failed(Throwable exc, AsynchronousSocketChannel channel) {
+            	Logger.error("failed to write");
+            }
+            
+        });
+    }
+>>>>>>> 29941589d8f8b38a72184f04100f02b51dd3888b
 }
